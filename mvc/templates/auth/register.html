@@ -1,0 +1,15 @@
+{% extends 'layout.html' %} {% block header %}
+<h1>{% block title %}Register{% endblock %}</h1>
+{% endblock %} {% block content %}
+<form class="ui form" method="post">
+  <div class="field">
+    <label for="username">Username</label>
+    <input name="username" id="username" required />
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required />
+  </div>
+  <input type="submit" value="Register" />
+</form>
+{% endblock %}

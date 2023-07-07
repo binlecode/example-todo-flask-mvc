@@ -1,0 +1,90 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+  <form class="ui form" action="/todos/add" method="post" enctype="multipart/form-data">
+    <div class="field">
+      <label>Todo title</label>
+      <input type="text" name="title" placeholder="Enter Todo..." />
+    </div>
+    <div class="field">
+      <label for="file">Todo image</label>
+      <input type="file" name="pic" accept="image/*" />
+    </div>
+    <div class="field">
+      <label for="assginee_ids">Assign to</label>
+      <select name="assignee_ids" class="selection" multiple="multiple">
+        {% for u in user_list %}
+        <option value="{{u.id}}">{{ u.username }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="ui blue button" type="submit">Add</button>
+  </form>
+
+  <hr />
+
+  {% for todo in todo_list %}
+  <div class="ui segment">
+    <p class="ui big header">
+      {{ todo.id }} | {{ todo.title }} 
+      {% if todo.complete == False %}
+      <span class="ui gray label">Not Complete</span>
+      {% else %}
+      <span class="ui green label">Completed</span>
+      {% endif %}
+
+      {% if todo.img %}
+      <div>
+        <img src="data:;base64,{{ todo.img }}" width="240" />
+      </div>
+      {% endif %}
+
+      <!-- {% if todo.assignees %}
+      <p>Assigned to:</p>
+      <ul>
+        {% for user in todo.assignees %}
+        <li>
+          {{ user.username }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %} -->
+    </p>
+
+    <!-- it should be PUT, but form tag only allows GET and POST -->
+    <!-- todo: replace with ajax PUT -->
+    <form method="post" action="/todos/update/{{todo.id}}">
+      <div>
+        title:
+        <input type="text" value="{{todo.title}}" name="title" />
+        <input type="checkbox" value="{{todo.complete}}" name="complete" />
+        <span>complete</span>
+      </div>
+      
+      <div class="field">
+        <label for="assginee_ids">assignees:</label>
+        <select name="assignee_ids" class="" multiple="multiple">
+          {% for u in user_list %}
+            {% if u in todo.assignees %}
+              <option value="{{u.id}}" selected="true">{{ u.username }}</option>
+            {% else %}
+              <option value="{{u.id}}">{{ u.username }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+
+      <button class="ui blue button" type="submit">Update</button>
+    </form>
+
+    <!-- again, html form has no DELETE method -->
+    <!-- todo: replace with ajax DELETE -->
+    <form method="POST" action="/todos/delete/{{todo.id}}">
+      <button class="ui red button" type="submit">Delete</button>
+    </form>
+  </div>
+  {% endfor %}
+
+{% endblock %} 
+

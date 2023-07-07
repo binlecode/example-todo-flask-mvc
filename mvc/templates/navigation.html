@@ -1,0 +1,45 @@
+<div class="ui attached stackable menu">
+  <div class="ui container">
+    <a class="item" href="{{ url_for('home.index') }}">
+      <i class="home icon"></i> Home
+    </a>
+    <a class="item" href="{{url_for('todos.home')}}">
+      <i class="grid layout icon"></i> Todos
+    </a>
+    <a class="item" href="{{url_for('users.index')}}">
+      <i class="mail icon"></i> Users
+    </a>
+    <div class="ui simple dropdown item">
+      Hello {{ g.user.username if g.user else 'Unknown' }}
+      <i class="dropdown icon"></i>
+      <div class="menu">
+        {% if g.user %}
+        <a class="item"><i class="edit icon"></i> Edit Profile</a>
+        <a class="item"><i class="settings icon"></i> Account Settings</a>
+        <a class="item" href="{{ url_for('auth.logout') }}">
+          <i class="globe icon"></i> Log Out
+        </a>
+        {% else %}
+        <a class="item" href="{{ url_for('auth.register') }}">
+          <i class="settings icon"></i> Register
+        </a>
+        <a class="item" href="{{ url_for('auth.login') }}">
+          <i class="settings icon"></i> Log In
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="ui simple dropdown item">
+      More
+      <i class="dropdown icon"></i>
+      <div class="menu">
+        <a class="item"><i class="edit icon"></i> Edit Profile</a>
+        <a class="item"><i class="globe icon"></i> Choose Language</a>
+        <a class="item"><i class="settings icon"></i> Account Settings</a>
+      </div>
+    </div>
+    <div class="right item">
+      <div class="ui input"><input type="text" placeholder="Search..." /></div>
+    </div>
+  </div>
+</div>
