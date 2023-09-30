@@ -1,10 +1,20 @@
 # todos application mvc web stack with flask
 
-Application overview:
+This application provides basic implementation examples for:
 
-- MVC stack, html templates and sqlalchemy orm
-- Sementic-UI is used for page styles
-- Save a web uploaded file to a BLOB db column
+- application factory pattern
+  - `create_app()` function in `mvc/__init__.py`
+- web stack:
+  - blueprint for app routes
+  - MVC stack, jinja2 html templates 
+  - sqlalchemy orm
+  - web file upload save to BLOB db column
+  - basic username/password authentication with Werkzeug security
+- UI:
+  - Sementic-UI is used for page styles
+- deployment:
+  - gunicorn as wsgi server
+  - docker container
 
 ## local run
 
@@ -20,20 +30,19 @@ source venv/bin/activate
 # install dependencies
 pip install -U pip
 pip install -r requirements.txt
-# run flask app
-export FLASK_APP=mvc
-FLASK_DEBUG=true python -m flask run
 ```
 
-Debug is enabled by `FLASK_DEBUG` env.
-And reloader is enabled when debug is enabled.
+Run flask app with debug enabled.
+Auto-reload is enabled when debug is enabled.
+
+```sh
+FLASK_APP=mvc FLASK_DEBUG=true python -m flask run
+```
 
 To run in terminal shell model:
 
 ```sh
-export FLASK_DEBUG=1
-export FLASK_APP=mvc
-python -m flask shell
+FLASK_DEBUG=1 FLASK_APP=mvc python -m flask shell
 ```
 
 The flask app can also run with gunicorn, a production grade web container.
