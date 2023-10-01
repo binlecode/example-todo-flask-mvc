@@ -32,3 +32,5 @@ instance/
 
 # sqlite db files
 **/*.db
+# celery beat schedule temp file
+celerybeat-schedule

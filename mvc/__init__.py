@@ -68,12 +68,37 @@ def create_app(test_config=None):
     db.init_app(app)
 
     # initialize db
-    app.logger.info("sqlalchemy started database sync")
     with app.app_context():
+        app.logger.info("sqlalchemy started database sync")
         # for any schema DDL change, need to enable db.drop_all() to reset db
         # db.drop_all()
         db.create_all()
-    app.logger.info("sqlalchemy completed database sync")
+        app.logger.info("sqlalchemy completed database sync")
+
+    # setup background tasks with celery
+    from .celery_init import celery_init_app
+    from .celery_tasks import CELERY_BEAT_SCHEDULE
+
+    app.config.from_mapping(
+        CELERY=dict(
+            # Use redis as the broker for celery
+            # "redis://localhost:6379/0"
+            broker_url="redis://localhost",
+            # set redis as backend to store the task state and return values
+            result_backend="redis://localhost",
+            # set default not to store task state and result in redis, but can
+            # override specific tasks to enable it
+            task_ignore_result=True,
+            # optional: set a prefix for all keys stored in redis by this app
+            result_backend_transport_options={"global_keyprefix": "todos_mvc_"},
+            # add a beat schedule for periodic tasks
+            beat_schedule=CELERY_BEAT_SCHEDULE,
+        ),
+    )
+    # This is the celery app that will be used in `celery -A' command,
+    # its full name is `flask_app.app.celery_app` for -A option
+    celery_init = celery_init_app(app)
+    app.logger.info("flask app loaded with celery")
 
     # initialize blueprints
 
