@@ -4,10 +4,6 @@
 # - it tells Python that the mvc directory is a package
 # - it contains the application factory
 #
-# this todos app is following app-factory/blueprint pattern
-# app-factory prevents app from being a global variable, and also helps
-# creating app for test environment
-#
 
 from mvc.model import User
 from flask.helpers import make_response

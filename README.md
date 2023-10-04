@@ -4,6 +4,13 @@ This application provides basic implementation examples for:
 
 - application factory pattern
   - `create_app()` function in `mvc/__init__.py`
+  - factory pattern benefits:
+    - prevents app from being a global variable
+    - supports creating multiple app instances for background jobs context, 
+      test environment context, etc.
+    - see:
+      - https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/
+      - https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure
 - web stack:
   - blueprint for app routes
   - MVC stack, jinja2 html templates
@@ -18,6 +25,8 @@ This application provides basic implementation examples for:
 - deployment:
   - gunicorn as wsgi server
   - docker container
+
+
 
 ## local run
 
