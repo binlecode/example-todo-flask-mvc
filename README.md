@@ -6,7 +6,7 @@ This application provides basic implementation examples for:
   - `create_app()` function in `mvc/__init__.py`
   - factory pattern benefits:
     - prevents app from being a global variable
-    - supports creating multiple app instances for background jobs context, 
+    - supports creating multiple app instances for background jobs context,
       test environment context, etc.
     - see:
       - https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/
@@ -25,8 +25,6 @@ This application provides basic implementation examples for:
 - deployment:
   - gunicorn as wsgi server
   - docker container
-
-
 
 ## local run
 
@@ -113,11 +111,37 @@ run container:
 
 ```sh
 docker run --name todomvc-flask -p 5000:5000 --rm todosmvc-flask
-# add -d in detached mode
+# add -d in daemon mode
 docker run --name todomvc-flask -d -p 5000:5000 --rm todosmvc-flask
 ```
 
 container server is at http://127.0.0.1:5000/todos
+
+## push docker image to docker hub image registry
+
+Push the docker image to docker hub image registry so that it can be deployed
+to a remote server such as a kubetnetes cluster.
+
+First login to docker hub:
+
+```sh
+docker login
+```
+
+Then, tag the image with docker hub username (`ikalidocker`)):
+
+```sh
+docker tag example-todo-flask-mvc ikalidocker/example-todo-flask-mvc
+
+# check image tag
+docker images ls
+```
+
+Finally, push the image to docker hub:
+
+```sh
+docker push ikalidocker/example-todo-flask-mvc
+```
 
 ## project dependency setup
 
