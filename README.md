@@ -2,22 +2,20 @@
 
 This application provides basic implementation examples for:
 
-- application factory pattern
-  - `create_app()` function in `mvc/__init__.py`
-  - factory pattern benefits:
-    - prevents app from being a global variable
-    - supports creating multiple app instances for background jobs context,
+- application factory pattern, factory function in `__init__.py`
+  - prevents app from being a global variable
+  - supports creating multiple app instances for background jobs context,
       test environment context, etc.
-    - see:
-      - https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/
-      - https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure
-- web stack:
-  - blueprint for app routes
-  - MVC stack, jinja2 html templates
+  - see:
+    - https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/
+    - https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure
+- mvc stack:
+  - blueprint to group routes
+  - jinja2 view templates
   - sqlalchemy orm
-  - web file upload save to BLOB db column
+  - file upload save to BLOB db column
   - basic username/password authentication with Werkzeug security
-- UI:
+- UI css:
   - Sementic-UI is used for page styles
 - background job:
   - celery + redis
@@ -25,33 +23,26 @@ This application provides basic implementation examples for:
 - deployment:
   - gunicorn as wsgi server
   - docker container
+  - digitalocean k8s cluster deployment
 
 ## local run
 
-Check Dockerfile for container runtime setup.
-
-For a local run:
+Setup local runtime environemnt:
 
 ```sh
 pyenv shell 3.10
-# create and activate venv
 python -m venv venv
 source venv/bin/activate
-# install dependencies
 pip install -U pip
 pip install -r requirements.txt
 ```
 
-Run flask app with debug enabled.
-Auto-reload is enabled when debug is enabled.
+Run flask dev server with debug enabled (which enableds auto-reload).
 
 ```sh
 FLASK_APP=mvc FLASK_DEBUG=true python -m flask run
-```
 
-To run in terminal shell model:
-
-```sh
+# or run a flash terminal shell:
 FLASK_DEBUG=1 FLASK_APP=mvc python -m flask shell
 ```
 
@@ -91,59 +82,77 @@ print(session.query(todos_tb).all())
 
 ## background job with celery + redis
 
-## deployment
+See [`README_celery_redis.md`](./README_celery_redis.md).
 
-For deployment, flask app uses gunicorn as a production grade wsgi server.
+## wsgi server with gunicorn
+
+Use gunicorn as wsgi server for deployment.
 
 ```sh
-gunicorn -b :5000 -w 2 --access-logfile - --error-logfile - 'mvc:create_app()'
+gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
 ```
 
-For container deployment, use docker to build image:
+Gthread worker is used when -t is set for multiple threads per worker, where
+a threadpool is created in each worker process.
+
+To run the app in a sub-mounted path, use `SCRIPT_NAME` env var to set the
+sub-mounted path prefix:
 
 ```sh
-docker build -t todosmvc-flask .
-# check built image
-docker images
+SCRIPT_NAME=todo-flask-mvc gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
+
+# check the app is running in the sub-mounted path
+curl http://localhost:5000/todo-flask-mvc/health
 ```
 
-run container:
+## container deployment
+
+For container deployment, use docker to build image and run.
 
 ```sh
-docker run --name todomvc-flask -p 5000:5000 --rm todosmvc-flask
-# add -d in daemon mode
-docker run --name todomvc-flask -d -p 5000:5000 --rm todosmvc-flask
+docker build -t example-todo-flask-mvc .
+docker run --name todo-flask-mvc -p 5000:5000 --rm example-todo-flask-mvc
 ```
 
-container server is at http://127.0.0.1:5000/todos
+## build multi-platform images and push docker hub image registry
 
-## push docker image to docker hub image registry
-
-Push the docker image to docker hub image registry so that it can be deployed
-to a remote server such as a kubetnetes cluster.
-
-First login to docker hub:
+In MacOS, run docker buildx to build multi-platform images for x86 amd64 and
+arm64. The docker images in docker hub can be deployed to a remote server
+such as a kubetnetes cluster.
 
 ```sh
+# check docker buildx builder instances
+docker buildx ls
+# if there's only one builder instance, need to create another builder
+# instance to support parallel multi-platform builds
+docker buildx create --name mybuilder
+# use the builder instance
+docker buildx use mybuilder
+
+# check dockerhub login status
 docker login
+
+# if there are multiple builders active, run multi-platform builds and push in one cli
+docker buildx build --platform linux/amd64,linux/arm64/v8 -t ikalidocker/example-todo-flask-mvc --push .
+
+# otherwise, run build for each platform one by one
+docker build --platform linux/amd64 -t ikalidocker/example-todo-flask-mvc --push .
+docker build --platform linux/arm64/v8 -t ikalidocker/example-todo-flask-mvc --push .
+
+# check built image
+docker image list
 ```
 
-Then, tag the image with docker hub username (`ikalidocker`)):
+Building image and pushing to dockerhub registry within one docker command has
+the advantage that docker will automatically add platform metadata to the
+built image. This is useful for kubernetes deployment, where the kubernetes
+cluster will automatically pull the correct image for the platform it runs on.
 
-```sh
-docker tag example-todo-flask-mvc ikalidocker/example-todo-flask-mvc
+## kubernetes deployment
 
-# check image tag
-docker images ls
-```
+See [`k8s/README.md`](./k8s/README.md).
 
-Finally, push the image to docker hub:
-
-```sh
-docker push ikalidocker/example-todo-flask-mvc
-```
-
-## project dependency setup
+## project bootstrap
 
 ```sh
 # create .python-version file with v3.10

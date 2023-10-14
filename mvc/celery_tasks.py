@@ -42,10 +42,10 @@ CELERY_BEAT_SCHEDULE = {
 # With application factory pattern, the db engine is not available in module
 # namespace, so a separate db engine is created directly.
 
-from .config import SQLALCHEMY_DATABASE_URI
+from config import Config
 from sqlalchemy import create_engine
 
-engine = create_engine(SQLALCHEMY_DATABASE_URI, pool_recycle=3600, pool_size=5)
+engine = create_engine(Config.SQLALCHEMY_DATABASE_URI, pool_recycle=3600, pool_size=5)
 db_session = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine)
 )

@@ -5,61 +5,31 @@
 # - it contains the application factory
 #
 
-from mvc.model import User
 from flask.helpers import make_response
 from flask import render_template
 from flask import Flask
 from flask import g, request, session
 import os
-import logging
 import time
 import datetime
-import json
 
-# LOG = logging.getLogger(__file__)
-# LOG.setLevel(logging.DEBUG)
+from config import Config
+from mvc.model import db
+from mvc.model import User
 
 
-def create_app(test_config=None):
+def create_app(config=Config):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    app.config.from_object(config)
 
-    # secret key will be used for securely signing the session cookie
-    # app.config['SECRET_KEY'] = 'todo-dev-secret'
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./todos.db'
-    # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    if test_config is None:
-        # load default config.py from project root
-        # app.config.from_object('config')
-
-        # load config.py from current folder, if exists
-        try:
-            from . import config
-
-            app.config.from_object(config)
-        except Exception as e:
-            app.logger.error(f"ERROR loading config: {e}")
-
-        # load instance/config.py file
-        # when instance_relative_config=True is set in Flask() call
-        # slient=True to mute error if file not found in instance folder
-        app.config.from_pyfile("config.py", silent=True)
-
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
-
-    # ensure the instance folder exists
+    # ensure the instance folder exists, needed for sqlite db and file upload
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
 
-    # /// = relative path, //// = absolute path
-
     # setup db conn
-    from mvc.model import db
 
     db.init_app(app)
 

@@ -80,10 +80,10 @@ def update(user_id):
     except Exception as e:
         LOG.error(f"Failed to update user: {user}")
         LOG.error(e)
-    return redirect("/users")
+    return redirect(url_for("users.index"))
 
 
-@bp.route("/todos/delete/<user_id>", methods=["POST", "DELETE"])
+@bp.route("/users/delete/<user_id>", methods=["POST", "DELETE"])
 def delete(user_id):
     user = User.query.filter_by(id=user_id).first()
     db.session.delete(user)

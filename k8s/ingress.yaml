@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: todo-flask-mvc
+  name: todo-flask-mvc-ingress
+  labels:
+    app: todo-flask-mvc
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /todo-flask-mvc
+            pathType: Prefix
+            backend:
+              service:
+                name: todo-flask-mvc-service
+                port:
+                  number: 80

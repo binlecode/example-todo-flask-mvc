@@ -49,7 +49,6 @@ class Todo(db.Model):
         "User",
         secondary=assignments,
         lazy="subquery",
-        # backref='todos'
         backref=db.backref("todos", lazy="subquery"),
     )
 

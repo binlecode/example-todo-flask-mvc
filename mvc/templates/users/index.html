@@ -1,8 +1,8 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-
-    <form class="ui form" action="/users/add" method="post" enctype="multipart/form-data">
+    <!-- always use url_for() over hard-coded action url -->
+    <form class="ui form" action="{{url_for('users.add')}}" method="post" enctype="multipart/form-data">
       <div class="field">
         <label>Username</label>
         <input type="text" name="username" placeholder="Enter Username..." />
@@ -41,7 +41,7 @@
 
       <!-- it should be PUT, but form tag only allows GET and POST -->
       <!-- todo: replace with ajax PUT -->
-      <form method="post" action="/users/update/{{user.id}}">
+      <form method="post" action="{{url_for('users.update', user_id=user.id)}}">
         new username
         <input type="text" value="{{user.username}}" name="username" />
         <button class="ui blue button" type="submit">Update</button>
@@ -49,7 +49,7 @@
 
       <!-- again, html form has no DELETE method -->
       <!-- todo: replace with ajax DELETE -->
-      <form method="POST" action="/users/delete/{{user.id}}">
+      <form method="POST" action="{{url_for('users.delete', user_id=user.id)}}">
         <button class="ui red button" type="submit">Delete</button>
       </form>
     </div>
