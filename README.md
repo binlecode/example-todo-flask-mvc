@@ -5,7 +5,7 @@ This application provides basic implementation examples for:
 - application factory pattern, factory function in `__init__.py`
   - prevents app from being a global variable
   - supports creating multiple app instances for background jobs context,
-      test environment context, etc.
+    test environment context, etc.
   - see:
     - https://flask.palletsprojects.com/en/2.3.x/patterns/appfactories/
     - https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure
@@ -94,9 +94,15 @@ gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app
 
 Gthread worker is used when -t is set for multiple threads per worker, where
 a threadpool is created in each worker process.
+As a result, gthread workers require more memory.
 
 To run the app in a sub-mounted path, use `SCRIPT_NAME` env var to set the
-sub-mounted path prefix:
+sub-mounted path prefix.
+
+> Sub-mount is needed in kubernetes deployment, where the app is usually deployed
+> as a service behind an ingress resource, which is shared with other services,
+> by using sub-mount path to distinguish different services.
+> See [k8s ingress](./k8s/ingress.yaml)
 
 ```sh
 SCRIPT_NAME=todo-flask-mvc gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
@@ -147,6 +153,12 @@ Building image and pushing to dockerhub registry within one docker command has
 the advantage that docker will automatically add platform metadata to the
 built image. This is useful for kubernetes deployment, where the kubernetes
 cluster will automatically pull the correct image for the platform it runs on.
+
+To test run a container from dockerhub image:
+
+```sh
+docker run --name todo-flask-mvc -p 5000:5000 --env-file .env --rm ikalidocker/example-todo-flask-mvc
+```
 
 ## kubernetes deployment
 

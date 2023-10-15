@@ -40,12 +40,21 @@ kubectl expose deployment todo-flask-mvc --type=NodePort \
 kubectl get service -n todo-flask-mvc
 ```
 
-To delete deployment:
+A common practice to customize deployment is by exporting the yaml file
+from the deployment, and then edit the yaml file and apply the update.
 
 ```sh
-kubectl delete service todo-flask-mvc
-kubectl delete deployment todo-flask-mvc
+kubectl get deployment todo-flask-mvc -n todo-flask-mvc -o yaml > k8s/deployment.yaml
+
+# after update the yaml file, apply the update
+kubectl apply -f k8s/deployment.yaml
 ```
+
+The exported yaml file contains status and creation timestamp data, they
+need to be removed before applying the update, otherwise, the update will
+fail with error message `the object has been modified; please apply your changes to the latest version and try again`.
+
+See [k8s deployment yaml](./k8s/deployment.yaml)
 
 ## install k8s nginx ingress for public load balancer
 
@@ -102,12 +111,6 @@ kubectl edit configmap todo-flask-mvc-configmap -n todo-flask-mvc
 
 ```
 
-
-
-
-
-
-
 ## Appendix - Ingress that makes use of the controller:
 
 ```yaml
@@ -146,4 +149,4 @@ If TLS is enabled for the Ingress, a Secret containing the certificate and key m
     tls.crt: <base64 encoded cert>
     tls.key: <base64 encoded key>
   type: kubernetes.io/tls
-````
+```
