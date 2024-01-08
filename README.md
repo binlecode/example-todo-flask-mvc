@@ -86,41 +86,67 @@ See [`README_celery_redis.md`](./README_celery_redis.md).
 
 ## wsgi server with gunicorn
 
-Use gunicorn as wsgi server for deployment.
+Gunicorn is used as wsgi server for deployment.
+
+Run locally with gunicorn:
 
 ```sh
 gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
 ```
 
-Gthread worker is used when -t is set for multiple threads per worker, where
-a threadpool is created in each worker process.
-As a result, gthread workers require more memory.
+`-t` creates multi-thread pool for each worker process.
+By default, Gthread is used by gunicorn, can be changed to gevent with
+`--worker-class gevent`.
+Multi-thread pool is useful for blocking io operations, such as db query,
+http request, etc.
+Multi-threading requires more memory, don't use `-t` for <512MB memory.
 
-To run the app in a sub-mounted path, use `SCRIPT_NAME` env var to set the
-sub-mounted path prefix.
+`--access-logfile -` and `--error-logfile -` redirects access and error logs
+from stderr to stdout, which avoids error alerts in container monitoring.
+
+Gunicorn supports the app in a sub-mounted path, by using `SCRIPT_NAME` env var
+to set the sub-mounted path prefix.
+
+The locally run gunicorn served flask app has access to local .env file,
+which contains a submount path prefix `SCRIPT_NAME`.
+
+For example, if the `SCRIPT_NAME=/todo-flask-mvc`, then the app will be
+mounted at `/todo-flask-mvc` url path.
+
+```sh
+curl http://localhost:5000/todo-flask-mvc/health
+```
+
+In a deployed container, where there's no .env file, the `SCRIPT_NAME` env var
+has to be set.
+For example, without .env file:
+
+```sh
+SCRIPT_NAME=todo-flask-mvc gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
+```
+
+In a kubernetes deployment, the `SCRIPT_NAME` env var can be set in the
+configmap. See [k8s config yaml](./k8s/config.yaml)
 
 > Sub-mount is needed in kubernetes deployment, where the app is usually deployed
 > as a service behind an ingress resource, which is shared with other services,
 > by using sub-mount path to distinguish different services.
 > See [k8s ingress](./k8s/ingress.yaml)
 
-```sh
-SCRIPT_NAME=todo-flask-mvc gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
-
-# check the app is running in the sub-mounted path
-curl http://localhost:5000/todo-flask-mvc/health
-```
-
 ## container deployment
 
-For container deployment, use docker to build image and run.
+Test local docker image build and run, with `test` version suffix:
 
 ```sh
-docker build -t example-todo-flask-mvc .
-docker run --name todo-flask-mvc -p 5000:5000 --rm example-todo-flask-mvc
+docker build -t example-todo-flask-mvc:test .
+
+docker run --name todo-flask-mvc -p 5000:5000 --rm \
+  -e "SCRIPT_NAME=todo-flask-mvc" \
+  -e "SECRET_KEY=user-a-real-secret-string-for-production" \
+  example-todo-flask-mvc:test
 ```
 
-## build multi-platform images and push docker hub image registry
+## build multi-platform images and push to dockerhub image registry
 
 In MacOS, run docker buildx to build multi-platform images for x86 amd64 and
 arm64. The docker images in docker hub can be deployed to a remote server
@@ -135,17 +161,13 @@ docker buildx create --name mybuilder
 # use the builder instance
 docker buildx use mybuilder
 
-# check dockerhub login status
-docker login
+# dockerhub login with access token in shell env var
+docker login --username=ikalidocker --password=$DOCKERHUB_TOKEN
+
+echo $DOCKERHUB_TOKEN | docker login --username=ikalidocker --password-stdin
 
 # if there are multiple builders active, run multi-platform builds and push in one cli
-docker buildx build --platform linux/amd64,linux/arm64,linux/arm64/v8 -t ikalidocker/example-todo-flask-mvc:latest --push .
-
-# OR, run build for a specific platform, such as for local docker desktop
-docker buildx build --platform linux/arm64 -t ikalidocker/example-todo-flask-mvc:latest .
-
-# check built image
-docker image list
+docker buildx build --platform linux/amd64,linux/arm64 -t ikalidocker/example-todo-flask-mvc:latest --push .
 ```
 
 Building image and pushing to dockerhub registry within one docker command has
@@ -156,15 +178,23 @@ cluster will automatically pull the correct image for the platform it runs on.
 To test run a container from dockerhub image:
 
 ```sh
-docker run --name todo-flask-mvc -p 5000:5000 --env-file .env --rm ikalidocker/example-todo-flask-mvc
+docker pull ikalidocker/example-todo-flask-mvc:latest
+docker run --name todo-flask-mvc -p 5000:5000 --rm \
+  -e "SCRIPT_NAME=todo-flask-mvc" \
+  -e "SECRET_KEY=user-a-real-secret-string-for-production" \
+  ikalidocker/example-todo-flask-mvc:latest
+
+# check if the app is running in the sub-mounted path
+curl http://localhost:5000/todo-flask-mvc/health
 ```
 
 ## kubernetes deployment
 
+K8s manifests are for digitalocean k8s cluster.
+
 See [`k8s/README.md`](./k8s/README.md).
 
-
-## development notes
+## other development notes
 
 To format code, use black and isort.
 Isort usually will break black formatting, so run isort first, then run black.
