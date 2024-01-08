@@ -6,6 +6,25 @@ on:
 env:
   DOCKER_BUILDKIT: 1
 jobs:
+  # build with manual push
+  # build-and-push:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Cancel Previous Runs
+  #       uses: styfle/cancel-workflow-action@0.12.0
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Build
+  #       run: |
+  #         # docker build --progress=plain --tag ${{ github.repository }}:${{ github.sha }} .
+  #         docker build --progress=plain --tag ikalidocker/example-todo-flask-mvc:${{ github.sha }} .
+  #     - name: Push
+  #       run: |
+  #         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+  #         # docker push ${{ github.repository }}:${{ github.sha }}
+  #         docker push ikalidocker/example-todo-flask-mvc:${{ github.sha }}
+  #
+  # use docker buildx and docker/build-push-action for multi-arch build
   build-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -13,12 +32,19 @@ jobs:
         uses: styfle/cancel-workflow-action@0.12.0
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Build
-        run: |
-          # docker build --progress=plain --tag ${{ github.repository }}:${{ github.sha }} .
-          docker build --progress=plain --tag ikalidocker/example-todo-flask-mvc:${{ github.sha }} .
-      - name: Push
-        run: |
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          # docker push ${{ github.repository }}:${{ github.sha }}
-          docker push ikalidocker/example-todo-flask-mvc:${{ github.sha }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ikalidocker/example-todo-flask-mvc:${{ github.sha }}
