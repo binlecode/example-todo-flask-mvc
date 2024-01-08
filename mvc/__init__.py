@@ -5,17 +5,15 @@
 # - it contains the application factory
 #
 
-from flask.helpers import make_response
-from flask import render_template
-from flask import Flask
-from flask import g, request, session
+import datetime
 import os
 import time
-import datetime
+
+from flask import Flask, g, render_template, request, session
+from flask.helpers import make_response
 
 from config import Config
-from mvc.model import db
-from mvc.model import User
+from mvc.model import User, db
 
 
 def create_app(config=Config):

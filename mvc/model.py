@@ -1,10 +1,10 @@
 # model.py
 #
 
-from flask_sqlalchemy import SQLAlchemy
-import flask_sqlalchemy
 import uuid
 
+import flask_sqlalchemy
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import DateTime
 from sqlalchemy.orm import backref, validates
 from sqlalchemy.sql import func

@@ -1,11 +1,9 @@
 from datetime import datetime
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import scoped_session
-from celery import shared_task
-from celery import Task
-from .model import db
-from .model import Todo
 
+from celery import Task, shared_task
+from sqlalchemy.orm import scoped_session, sessionmaker
+
+from .model import Todo, db
 
 # To call a task periodically you have to add an entry to the beat schedule list.
 # This requires beat scheduler worker process to be running, start it with:
@@ -42,8 +40,9 @@ CELERY_BEAT_SCHEDULE = {
 # With application factory pattern, the db engine is not available in module
 # namespace, so a separate db engine is created directly.
 
-from config import Config
 from sqlalchemy import create_engine
+
+from config import Config
 
 engine = create_engine(Config.SQLALCHEMY_DATABASE_URI, pool_recycle=3600, pool_size=5)
 db_session = scoped_session(

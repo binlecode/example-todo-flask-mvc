@@ -163,6 +163,16 @@ docker run --name todo-flask-mvc -p 5000:5000 --env-file .env --rm ikalidocker/e
 
 See [`k8s/README.md`](./k8s/README.md).
 
+
+## development notes
+
+To format code, use black and isort.
+Isort usually will break black formatting, so run isort first, then run black.
+
+```sh
+isort . && black .
+```
+
 ## project bootstrap
 
 ```sh
@@ -173,8 +183,10 @@ python -m venv venv
 # activate venv:
 source venv/bin/activate
 pip install -U pip
+# install formatting and import sorting tools
+pip install black isort
 # install pkgs
-pip install -U flask flask-sqlalchemy python-dotenv toml gunicorn
+pip install flask flask-sqlalchemy python-dotenv toml gunicorn
 # update requirements file
 pip freeze > requirements.txt
 ```

@@ -1,18 +1,22 @@
-from mvc.model import Todo, User, db
-from threading import currentThread
-from flask import Blueprint
-from flask import Flask
-from flask import flash
-from flask import render_template
-from flask import request, redirect, url_for
-from werkzeug.utils import secure_filename
-from base64 import b64encode
-from flask import current_app
-import os
-
-from sqlalchemy import desc
-
 import logging
+import os
+from base64 import b64encode
+from threading import currentThread
+
+from flask import (
+    Blueprint,
+    Flask,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+from sqlalchemy import desc
+from werkzeug.utils import secure_filename
+
+from mvc.model import Todo, User, db
 
 LOG = logging.getLogger(__name__)
 

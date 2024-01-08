@@ -1,17 +1,13 @@
+import logging
+import os
 import time
+from base64 import b64encode
+from threading import currentThread
+
+from flask import Blueprint, Flask, current_app, flash, redirect, request, url_for
+from werkzeug.utils import secure_filename
 
 from mvc.model import Todo, db
-from threading import currentThread
-from flask import Blueprint
-from flask import Flask
-from flask import flash
-from flask import request, redirect, url_for
-from werkzeug.utils import secure_filename
-from base64 import b64encode
-from flask import current_app
-import os
-
-import logging
 
 LOG = logging.getLogger(__name__)
 
