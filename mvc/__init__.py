@@ -166,12 +166,19 @@ def create_app(config=Config):
 
     @app.errorhandler(404)
     def err_not_found(error):
-        app.logger.error("server returns 404")
+        app.logger.info("server returns 404")
+        app.logger.info(error)
         resp = make_response(render_template("error404.html"), 404)
         # todo: can decorate resp object here
         return resp
 
-    # todo: impl custom 500 error handler
+    @app.errorhandler(500)
+    @app.errorhandler(Exception)
+    def err_internal_server_error(error):
+        app.logger.error("server returns 500")
+        app.logger.error(error)
+        resp = make_response(render_template("error500.html", error=error), 500)
+        return resp
 
     # todo: impl custom 403 and 401 error after login is added
 

@@ -1,8 +1,8 @@
 # todos application mvc web stack with flask
 
-This application provides basic implementation examples for:
+This application includes:
 
-- application factory pattern, factory function in `__init__.py`
+- application factory pattern, in `mvc.__init__.py`
   - prevents app from being a global variable
   - supports creating multiple app instances for background jobs context,
     test environment context, etc.
@@ -12,9 +12,9 @@ This application provides basic implementation examples for:
 - mvc stack:
   - blueprint to group routes
   - jinja2 view templates
-  - sqlalchemy orm
   - file upload save to BLOB db column
   - basic username/password authentication with Werkzeug security
+- sqlalchemy orm
 - UI css:
   - Sementic-UI is used for page styles
 - background job:
@@ -40,7 +40,7 @@ pip install -r requirements.txt
 Run flask dev server with debug enabled (which enableds auto-reload).
 
 ```sh
-FLASK_APP=mvc FLASK_DEBUG=true python -m flask run
+FLASK_APP=mvc FLASK_DEBUG=1 python -m flask run
 
 # or run a flash terminal shell:
 FLASK_DEBUG=1 FLASK_APP=mvc python -m flask shell
@@ -139,11 +139,10 @@ docker buildx use mybuilder
 docker login
 
 # if there are multiple builders active, run multi-platform builds and push in one cli
-docker buildx build --platform linux/amd64,linux/arm64/v8 -t ikalidocker/example-todo-flask-mvc --push .
+docker buildx build --platform linux/amd64,linux/arm64,linux/arm64/v8 -t ikalidocker/example-todo-flask-mvc:latest --push .
 
-# otherwise, run build for each platform one by one
-docker build --platform linux/amd64 -t ikalidocker/example-todo-flask-mvc --push .
-docker build --platform linux/arm64/v8 -t ikalidocker/example-todo-flask-mvc --push .
+# OR, run build for a specific platform, such as for local docker desktop
+docker buildx build --platform linux/arm64 -t ikalidocker/example-todo-flask-mvc:latest .
 
 # check built image
 docker image list

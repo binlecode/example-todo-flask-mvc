@@ -1,0 +1,19 @@
+<div class="ui container">
+  <h1>Oops!</h1>
+  <p>
+    Something went wrong on our end. We're working to fix it. Please try again
+    later.
+  </p>
+  <a href="{{ url_for('home.index') }}">Return to Home</a>
+</div>
+
+<div>
+  <p>
+    If the problem persists, please contact the administrator (<a
+      href="mailto:admin@localhost"
+      >admin@localhost</a
+    >).
+  </p>
+</div>
+
+<p>Error details: {{ error }}</p>
