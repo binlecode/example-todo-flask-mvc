@@ -6,13 +6,13 @@ on:
 env:
   DOCKER_BUILDKIT: 1
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.9.1
+        uses: styfle/cancel-workflow-action@0.12.0
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Build
         run: |
           # docker build --progress=plain --tag ${{ github.repository }}:${{ github.sha }} .
