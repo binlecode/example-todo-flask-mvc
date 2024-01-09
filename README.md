@@ -91,25 +91,33 @@ Gunicorn is used as wsgi server for deployment.
 Run locally with gunicorn:
 
 ```sh
-gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
+gunicorn -b :5000 -w 2 -t 2 --log-level=debug --access-logfile - --error-logfile - 'mvc:create_app()'
 ```
 
-`-t` creates multi-thread pool for each worker process.
-By default, Gthread is used by gunicorn, can be changed to gevent with
-`--worker-class gevent`.
-Multi-thread pool is useful for blocking io operations, such as db query,
-http request, etc.
-Multi-threading requires more memory, don't use `-t` for <512MB memory.
-
-`--access-logfile -` and `--error-logfile -` redirects access and error logs
-from stderr to stdout, which avoids error alerts in container monitoring.
+- `-b` to bind to a specific ip address and port
+- set `-w` to 2 * cpu cores + 1 for deployment
+- set `-t` to multiple threads enables thread pool in each worker process
+  - by default, Gthread is used by gunicorn, can be changed to gevent with
+    `--worker-class gevent`.
+  - multi-thread pool is useful for blocking io operations, such as db query,
+    http request, etc.
+  - multi-threading requires more memory, don't use `-t` for <512MB memory.
+- `--log-level` sets the gunicorn logger level
+  - gunicorn logger level is different from the flask logger level, thus the 
+    flask logger level needs to be set to gunicorn log level, 
+    see `mvc.__init__.py` for details
+  - gunicorn directs logs below `INFO` level to `stderr`, and `INFO` level and
+    above to `stdout`, `stderr` logs are treated as **errors** by cloud container
+    monitoring such as datadog, so it's better to set gunicorn log level to
+    `INFO` in production depoyment to avoid error alerts
+- `--access-logfile -` and `--error-logfile -` redirects access and error logs
+  from stderr to stdout, which avoids error alerts in container monitoring.
 
 Gunicorn supports the app in a sub-mounted path, by using `SCRIPT_NAME` env var
 to set the sub-mounted path prefix.
 
 The locally run gunicorn served flask app has access to local `.env` file,
 which contains a submount path prefix `SCRIPT_NAME`.
-
 For example, if the `SCRIPT_NAME=/todo-flask-mvc`, then the app will be
 mounted at `/todo-flask-mvc` url path.
 
@@ -117,23 +125,27 @@ mounted at `/todo-flask-mvc` url path.
 curl http://localhost:5000/todo-flask-mvc/health
 ```
 
-In a deployed container, where there's no `.env` file, the `SCRIPT_NAME` env var
-has to be set.
-For example, without `.env` file:
+For deployment, there's no `.env` file, the keys in `.env` file have to be set
+as env vars. For example:
 
 ```sh
-SCRIPT_NAME=todo-flask-mvc gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
+SCRIPT_NAME=todo-flask-mvc \
+LOG_LEVEL=info \
+SECRET_KEY=user-a-real-secret-string-for-production \
+gunicorn -b :5000 -w 2 -t 2 --log-level=$LOG_LEVEL --access-logfile - --error-logfile - 'mvc:create_app()'
 ```
 
-In a kubernetes deployment, the `SCRIPT_NAME` env var can be set in the
-configmap. See [k8s config yaml](./k8s/config.yaml)
+In a kubernetes deployment, these env vars can be set in the configmap.
+See [k8s config yaml](./k8s/config.yaml)
+
+Additional notes about sub-mount for k8s ingress:
 
 > Sub-mount is needed in kubernetes deployment, where the app is usually deployed
 > as a service behind an ingress resource, which is shared with other services,
 > by using sub-mount path to distinguish different services.
 > See [k8s ingress yaml](./k8s/ingress.yaml)
 
-## container deployment
+## build container image and run
 
 Test local docker image build and run, with `test` version suffix:
 
@@ -141,6 +153,7 @@ Test local docker image build and run, with `test` version suffix:
 docker build -t example-todo-flask-mvc:test .
 
 docker run --name todo-flask-mvc -p 5000:5000 --rm \
+  -e "LOG_LEVEL=debug" \
   -e "SCRIPT_NAME=todo-flask-mvc" \
   -e "SECRET_KEY=user-a-real-secret-string-for-production" \
   example-todo-flask-mvc:test

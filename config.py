@@ -7,6 +7,8 @@ load_dotenv(os.path.join(basedir, ".env"))
 
 
 class Config(object):
+    LOG_LEVEL = os.environ.get("LOG_LEVEL", "info").upper()
+
     # Flask’s SECRET_KEY configuration value to protect its forms abd cookies.
     # Flask-WTF extension also uses it to protect web forms against CSRF.
     SECRET_KEY = os.environ.get("SECRET_KEY", "you-can-not-guess")
