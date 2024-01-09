@@ -107,7 +107,7 @@ from stderr to stdout, which avoids error alerts in container monitoring.
 Gunicorn supports the app in a sub-mounted path, by using `SCRIPT_NAME` env var
 to set the sub-mounted path prefix.
 
-The locally run gunicorn served flask app has access to local .env file,
+The locally run gunicorn served flask app has access to local `.env` file,
 which contains a submount path prefix `SCRIPT_NAME`.
 
 For example, if the `SCRIPT_NAME=/todo-flask-mvc`, then the app will be
@@ -117,9 +117,9 @@ mounted at `/todo-flask-mvc` url path.
 curl http://localhost:5000/todo-flask-mvc/health
 ```
 
-In a deployed container, where there's no .env file, the `SCRIPT_NAME` env var
+In a deployed container, where there's no `.env` file, the `SCRIPT_NAME` env var
 has to be set.
-For example, without .env file:
+For example, without `.env` file:
 
 ```sh
 SCRIPT_NAME=todo-flask-mvc gunicorn -b :5000 -w 2 -t 2 --access-logfile - --error-logfile - 'mvc:create_app()' --log-level debug
@@ -131,7 +131,7 @@ configmap. See [k8s config yaml](./k8s/config.yaml)
 > Sub-mount is needed in kubernetes deployment, where the app is usually deployed
 > as a service behind an ingress resource, which is shared with other services,
 > by using sub-mount path to distinguish different services.
-> See [k8s ingress](./k8s/ingress.yaml)
+> See [k8s ingress yaml](./k8s/ingress.yaml)
 
 ## container deployment
 

@@ -22,6 +22,29 @@ def create_app(config=Config):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config)
 
+    # setup logging
+    # check if flask app is served by gunicorn
+    if "gunicorn" in os.environ.get("SERVER_SOFTWARE", ""):
+        app.logger.info("flask app is served by gunicorn")
+        # overwrite the default logger to use gunicorn logger
+        # Get the Gunicorn logger
+        gunicorn_logger = logging.getLogger("gunicorn.error")
+        # Overwrite the default logger to use Gunicorn logger
+        app.logger.handlers = gunicorn_logger.handlers
+        app.logger.setLevel(gunicorn_logger.level)
+        app.logger.info(
+            f"flask app logger is overwritten to use gunicorn logger: {gunicorn_logger}"
+        )
+        app.logger.info(
+            f"flask app logger level: {logging.getLevelName(app.logger.level)}"
+        )
+    else:
+        app.logger.info("flask app is served by flask buit-in server")
+        app.logger.setLevel(app.config["LOG_LEVEL"])
+        app.logger.info(
+            f"flask app logger level: {logging.getLevelName(app.logger.level)}"
+        )
+
     # ensure the instance folder exists, needed for sqlite db and file upload
     try:
         os.makedirs(app.instance_path)
@@ -64,21 +87,6 @@ def create_app(config=Config):
     # its full name is `flask_app.app.celery_app` for -A option
     celery_init = celery_init_app(app)
     app.logger.info("flask app loaded with celery")
-
-    # check if flask app is served by gunicorn
-    if "gunicorn" in os.environ.get("SERVER_SOFTWARE", ""):
-        app.logger.info("flask app is served by gunicorn")
-        # overwrite the default logger to use gunicorn logger
-        # Get the Gunicorn logger
-        gunicorn_logger = logging.getLogger('gunicorn.error')
-        # Overwrite the default logger to use Gunicorn logger
-        app.logger.handlers = gunicorn_logger.handlers
-        app.logger.setLevel(gunicorn_logger.level)
-        app.logger.info(f"flask app logger is overwritten to use gunicorn logger: {gunicorn_logger}")
-        app.logger.info(f"flask app logger level: {logging.getLevelName(app.logger.level)}")
-    else:
-        app.logger.info("flask app is served by flask buit-in server")
-        app.logger.info(f"flask app logger level: {logging.getLevelName(app.logger.level)}")
 
     # initialize blueprints
 
