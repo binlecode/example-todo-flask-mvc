@@ -140,7 +140,7 @@ def update(todo_id):
     except Exception as e:
         LOG.error(f"Failed to update todo: {todo}")
         LOG.error(e)
-    return redirect("/todos")
+    return redirect(url_for("todos.home"))
 
 
 # @bp.route('/todos/delete/<int:todo_id>')

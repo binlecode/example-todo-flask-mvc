@@ -1,5 +1,9 @@
 # todos application mvc web stack with flask
 
+### todo:
+
+- [ ] replace semantic UI with tailwindcss
+
 This application includes:
 
 - application factory pattern, in `mvc.__init__.py`
@@ -22,7 +26,8 @@ This application includes:
   - see [`README_celery_redis.md`](./README_celery_redis.md)
 - deployment:
   - gunicorn as wsgi server
-  - docker container
+  - docker container with default sqlite3 db
+  - docker compose with app service and pgsql service
   - digitalocean k8s cluster deployment
 
 ## local run
@@ -95,7 +100,7 @@ gunicorn -b :5000 -w 2 -t 2 --log-level=debug --access-logfile - --error-logfile
 ```
 
 - `-b` to bind to a specific ip address and port
-- set `-w` to 2 * cpu cores + 1 for deployment
+- set `-w` to 2 \* cpu cores + 1 for deployment
 - set `-t` to multiple threads enables thread pool in each worker process
   - by default, Gthread is used by gunicorn, can be changed to gevent with
     `--worker-class gevent`.
@@ -103,8 +108,8 @@ gunicorn -b :5000 -w 2 -t 2 --log-level=debug --access-logfile - --error-logfile
     http request, etc.
   - multi-threading requires more memory, don't use `-t` for <512MB memory.
 - `--log-level` sets the gunicorn logger level
-  - gunicorn logger level is different from the flask logger level, thus the 
-    flask logger level needs to be set to gunicorn log level, 
+  - gunicorn logger level is different from the flask logger level, thus the
+    flask logger level needs to be set to gunicorn log level,
     see `mvc.__init__.py` for details
   - gunicorn directs logs below `INFO` level to `stderr`, and `INFO` level and
     above to `stdout`, `stderr` logs are treated as **errors** by cloud container
@@ -126,14 +131,7 @@ curl http://localhost:5000/todo-flask-mvc/health
 ```
 
 For deployment, there's no `.env` file, the keys in `.env` file have to be set
-as env vars. For example:
-
-```sh
-SCRIPT_NAME=todo-flask-mvc \
-LOG_LEVEL=info \
-SECRET_KEY=user-a-real-secret-string-for-production \
-gunicorn -b :5000 -w 2 -t 2 --log-level=$LOG_LEVEL --access-logfile - --error-logfile - 'mvc:create_app()'
-```
+as env vars. See [Dockerfile](./Dockerfile) for details.
 
 In a kubernetes deployment, these env vars can be set in the configmap.
 See [k8s config yaml](./k8s/config.yaml)
@@ -201,6 +199,28 @@ docker run --name todo-flask-mvc -p 5000:5000 --rm \
 curl http://localhost:5000/todo-flask-mvc/health
 ```
 
+## docker compose for local development
+
+The container is directly run in docker without docker compose above.
+If no external database is provided, the application falls back to use 
+sqlite3 file db.
+See `config.py` for details.
+
+In `compose.yaml` file, a pgsql service is added for the persistence.
+And the database connection is set as a env var in the flask app container.
+
+```sh
+docker compose up --build
+
+# shutdown and remove containers, but keep images and volumes
+docker compose down
+
+# shut down and remove everything including images and volumes
+docker compose down --rmi all --volumes
+```
+
+See: https://docs.docker.com/engine/reference/commandline/compose_down/
+
 ## kubernetes deployment
 
 K8s manifests are for digitalocean k8s cluster.
@@ -229,7 +249,9 @@ pip install -U pip
 # install formatting and import sorting tools
 pip install black isort
 # install pkgs
-pip install flask flask-sqlalchemy python-dotenv toml gunicorn
+pip install flask flask-sqlalchemy python-dotenv toml 
+pip install psycopg2-binary
+pip install gunicorn
 # update requirements file
 pip freeze > requirements.txt
 ```

@@ -13,9 +13,11 @@ class Config(object):
     # Flask-WTF extension also uses it to protect web forms against CSRF.
     SECRET_KEY = os.environ.get("SECRET_KEY", "you-can-not-guess")
 
+    # if database url is not set by env var, use sqlite as default
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL"
+        "SQLALCHEMY_DATABASE_URI"
     ) or "sqlite:///" + os.path.join(basedir, "todos.db")
+    
     # enable query sql printout
     SQLALCHEMY_ECHO = True
     # Flask-SQLAlchemy has its own event notification system that gets layered

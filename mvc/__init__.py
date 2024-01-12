@@ -19,7 +19,7 @@ from mvc.model import User, db
 
 def create_app(config=Config):
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
     app.config.from_object(config)
 
     # setup logging
@@ -45,17 +45,8 @@ def create_app(config=Config):
             f"flask app logger level: {logging.getLevelName(app.logger.level)}"
         )
 
-    # ensure the instance folder exists, needed for sqlite db and file upload
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-
-    # setup db conn
-
+    # setup db conn and initialize db
     db.init_app(app)
-
-    # initialize db
     with app.app_context():
         app.logger.info("sqlalchemy started database sync")
         # for any schema DDL change, need to enable db.drop_all() to reset db

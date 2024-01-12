@@ -1,0 +1,43 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # optionally set container name
+    # container_name: app
+    # optionally override command to launch
+    # command: gunicorn -b :5000 -w 1 --log-level=debug --access-logfile - --error-logfile - --worker-tmp-dir /dev/shm 'mvc:create_app()'
+    ports:
+      - "5000:5000"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # overrides the default value inside Dockerfile
+      - SCRIPT_NAME=/todo-mvc
+      - LOG_LEVEL=INFO
+      # use service name, db, as hostname for the database connection
+      - SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@db:5432/postgres
+  db:
+    image: postgres
+    restart: always
+    user: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  db-data:
