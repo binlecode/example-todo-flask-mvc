@@ -130,18 +130,25 @@ mounted at `/todo-flask-mvc` url path.
 curl http://localhost:5000/todo-flask-mvc/health
 ```
 
-For deployment, there's no `.env` file, the keys in `.env` file have to be set
-as env vars. See [Dockerfile](./Dockerfile) for details.
+In a deployed environment, there's no `.env` file, the keys in `.env` file 
+should be set as env vars. 
+
+Dockerfile can define these env vars with a default value, they will be 
+overwritten by the env vars in the container runtime environment.
+See [Dockerfile](./Dockerfile).
+
+In docker compose, these env vars can be set in the `environment` section.
+See [compose.yaml](./compose.yaml).
 
 In a kubernetes deployment, these env vars can be set in the configmap.
 See [k8s config yaml](./k8s/config.yaml)
 
-Additional notes about sub-mount for k8s ingress:
+### About `SCRIPT_NAME` sub-mount for k8s ingress
 
-> Sub-mount is needed in kubernetes deployment, where the app is usually deployed
-> as a service behind an ingress resource, which is shared with other services,
-> by using sub-mount path to distinguish different services.
-> See [k8s ingress yaml](./k8s/ingress.yaml)
+Sub-mount is needed where the app is deployed as a service behind a gateway
+or load balancer (ingress), which is shared with other services,
+by using sub-mount path to distinguish different services.
+See [k8s ingress yaml](./k8s/ingress.yaml)
 
 ## build container image and run
 
@@ -163,6 +170,8 @@ In MacOS, run docker buildx to build multi-platform images for x86 amd64 and
 arm64. The docker images in docker hub can be deployed to a remote server
 such as a kubetnetes cluster.
 
+Use `latest` version tag for the image to push to dockerhub.
+
 ```sh
 # check docker buildx builder instances
 docker buildx ls
@@ -173,8 +182,8 @@ docker buildx create --name mybuilder
 docker buildx use mybuilder
 
 # dockerhub login with access token in shell env var
-docker login --username=ikalidocker --password=$DOCKERHUB_TOKEN
-
+# docker login --username=ikalidocker --password=$DOCKERHUB_TOKEN
+# recommended, more secure to use stdin pipe to pass token
 echo $DOCKERHUB_TOKEN | docker login --username=ikalidocker --password-stdin
 
 # if there are multiple builders active, run multi-platform builds and push in one cli
@@ -201,13 +210,12 @@ curl http://localhost:5000/todo-flask-mvc/health
 
 ## docker compose for local development
 
-The container is directly run in docker without docker compose above.
-If no external database is provided, the application falls back to use 
-sqlite3 file db.
-See `config.py` for details.
+When the container is directly run in docker alone above, there is no
+external database provided, the application uses sqlite3 file db as a 
+fall-back option defined in [`config.py`](./config.py) file.
 
 In `compose.yaml` file, a pgsql service is added for the persistence.
-And the database connection is set as a env var in the flask app container.
+The database connection is set as a env var in the flask app container.
 
 ```sh
 docker compose up --build
@@ -249,7 +257,7 @@ pip install -U pip
 # install formatting and import sorting tools
 pip install black isort
 # install pkgs
-pip install flask flask-sqlalchemy python-dotenv toml 
+pip install flask flask-sqlalchemy python-dotenv toml
 pip install psycopg2-binary
 pip install gunicorn
 # update requirements file
