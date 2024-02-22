@@ -11,7 +11,7 @@ from sqlalchemy.sql import func
 
 db = SQLAlchemy()
 
-# this the m-to-m mapping table b/t todos and users
+# m-to-m mapping table b/t todos and users
 # an m-to-m mapping table should not be a model, but simply a table
 assignments = db.Table(
     "assignments",

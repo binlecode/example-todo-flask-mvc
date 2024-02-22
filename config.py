@@ -17,7 +17,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "SQLALCHEMY_DATABASE_URI"
     ) or "sqlite:///" + os.path.join(basedir, "todos.db")
-    
+
     # enable query sql printout
     SQLALCHEMY_ECHO = True
     # Flask-SQLAlchemy has its own event notification system that gets layered

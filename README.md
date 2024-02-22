@@ -46,12 +46,15 @@ Run flask dev server with debug enabled (which enableds auto-reload).
 
 ```sh
 FLASK_APP=mvc FLASK_DEBUG=1 python -m flask run
+```
 
-# or run a flash terminal shell:
+To run a flash terminal shell:
+
+```sh
 FLASK_DEBUG=1 FLASK_APP=mvc python -m flask shell
 ```
 
-Flask shell is useful for interactive debugging.
+Use Flask shell for interactive debugging:
 
 ```python
 # in shell, check global variables
@@ -130,10 +133,10 @@ mounted at `/todo-flask-mvc` url path.
 curl http://localhost:5000/todo-flask-mvc/health
 ```
 
-In a deployed environment, there's no `.env` file, the keys in `.env` file 
-should be set as env vars. 
+In a deployed environment, there's no `.env` file, the keys in `.env` file
+should be set as env vars.
 
-Dockerfile can define these env vars with a default value, they will be 
+Dockerfile can define these env vars with a default value, they will be
 overwritten by the env vars in the container runtime environment.
 See [Dockerfile](./Dockerfile).
 
@@ -211,7 +214,7 @@ curl http://localhost:5000/todo-flask-mvc/health
 ## docker compose for local development
 
 When the container is directly run in docker alone above, there is no
-external database provided, the application uses sqlite3 file db as a 
+external database provided, the application uses sqlite3 file db as a
 fall-back option defined in [`config.py`](./config.py) file.
 
 In `compose.yaml` file, a pgsql service is added for the persistence.
